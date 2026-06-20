@@ -58,13 +58,13 @@ void generateRandomPaths(struct Graph* graph, struct City* cities);
 // Function to find the shortest path using Dijkstra's algorithm
 struct PathInfo dijkstra(struct Graph* graph, int source) {
     struct PathInfo pathInfo;
-    int distances[NUM_CITIES];
+    double distances[NUM_CITIES];
     int previous[NUM_CITIES];
     int visited[NUM_CITIES];
 
     // Initialize distances and visited arrays
     for (int i = 0; i < NUM_CITIES; i++) {
-        distances[i] = INT_MAX;
+        distances[i] = INFINITY;
         previous[i] = -1;
         visited[i] = 0;
     }
@@ -72,8 +72,8 @@ struct PathInfo dijkstra(struct Graph* graph, int source) {
     distances[source] = 0;
 
     for (int i = 0; i < NUM_CITIES - 1; i++) {
-        int minDistance = INT_MAX;
-        int minIndex;
+        double minDistance = INFINITY;
+        int minIndex = -1;
 
         for (int j = 0; j < NUM_CITIES; j++) {
             if (!visited[j] && distances[j] <= minDistance) {
@@ -83,14 +83,16 @@ struct PathInfo dijkstra(struct Graph* graph, int source) {
         }
 
         int u = minIndex;
+        if (u == -1) break; // remaining vertices are unreachable
         visited[u] = 1;
 
         for (int v = 0; v < NUM_CITIES; v++) {
             int pathNumber = -1;
             for (struct AdjListNode* head = graph->array[u].head; head != NULL; head = head->next, pathNumber++) {
                 if (head->dest == v) {
-                    if (!visited[v] && distances[u] != INT_MAX && distances[u] + 1 < distances[v]) {
-                        distances[v] = distances[u] + 1;
+                    // Relax the edge using its real geometric distance as weight
+                    if (!visited[v] && distances[u] != INFINITY && distances[u] + head->distance < distances[v]) {
+                        distances[v] = distances[u] + head->distance;
                         previous[v] = u;
                     }
                     break;
